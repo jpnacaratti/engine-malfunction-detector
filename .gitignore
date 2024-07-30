@@ -1,0 +1,8 @@
+# Python
+__pycache__/
+
+# Datasets
+dataset/healthy_cutted/*.wav
+dataset/healthy_files/*.wav
+dataset/noise_cutted/*.wav
+dataset/noise_files/*.wav
