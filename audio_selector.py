@@ -7,17 +7,15 @@ Created on Sun Jul 21 18:06:41 2024
 """
 
 import os
-from utils import cut_audio, AsyncAudioPlayer
-import soundfile as sf
+from utils import cut_audio, process_chunks
 import pandas as pd
 
 audio_length = 5 # seconds
 out_samplerate = 16000
-start_index = 20
+start_index = 0
 
 noise_path = 'dataset/noise_files'
-
-noise_data = pd.read_csv('dataset/noise_sounds.csv')
+noise_data = pd.read_csv('dataset/noise_sounds_ids.csv')
 
 print("Started for NOISE FILES")
 
@@ -28,7 +26,7 @@ for i in range(start_index, noise_files_amount):
     yt_id = element.replace(".wav", "")
     
     print()
-    print(f"Analising audio '{i}/{noise_files_amount}': {element}")
+    print(f"Analising audio '{i}/{noise_files_amount - 1}': {element}")
     
     filtered_df = noise_data[noise_data['youtube_id'] == yt_id]
     title = filtered_df['title'].iloc[0]
@@ -40,43 +38,12 @@ for i in range(start_index, noise_files_amount):
     count = 0
 
     chunks = cut_audio(audio_path, audio_length)
-    for i in range(len(chunks)):
-        chunk = chunks[i]
-        
-        while True:
-            
-            player = AsyncAudioPlayer()
-            player.play(chunk, out_samplerate)
-            
-            res = input(f"Analising CHUNK = {i}. Proceed with the audio? y|w|n|r ")
-            
-            player.stop()
-            
-            if res == "y":
-                # CHUNK_{YT_VIDEO_ID}_{VIDEO_ID_FILES_SAVED}_{CHUNK_SAVED}
-                saved_filename = f"CHUNK__{yt_id}__{count}__{i}.wav" 
-            elif res == "w":
-                saved_filename = f"CHUNK__W__{yt_id}__{count}__{i}.wav"
-            elif res == "n" or res == "":
-                print("Playing next CHUNK...")
-                break
-            elif res == "r":
-                print("Repeating CHUNK...")
-                continue
-            else:
-                continue
-            
-            out_path = os.path.join("dataset/noise_cutted", saved_filename)
-            sf.write(out_path, chunk, out_samplerate)
-            count += 1
-            
-            print(f"CHUNK saved as: {saved_filename}")
-            break
+    
+    process_chunks(chunks, out_samplerate, yt_id, 'dataset/noise_cutted')
             
             
 healthy_path = 'dataset/healthy_files'
-
-healthy_data = pd.read_csv('dataset/healthy_sounds.csv')
+healthy_data = pd.read_csv('dataset/healthy_sounds_ids.csv')
 
 print("Started for HEALTHY FILES")
 
@@ -87,7 +54,7 @@ for i in range(start_index, healthy_files_amount):
     yt_id = element.replace(".wav", "")
     
     print()
-    print(f"Analising audio '{i}/{healthy_files_amount}': {element}")
+    print(f"Analising audio '{i}/{healthy_files_amount - 1}': {element}")
     
     filtered_df = healthy_data[healthy_data['youtube_id'] == yt_id]
     title = filtered_df['title'].iloc[0]
@@ -101,36 +68,6 @@ for i in range(start_index, healthy_files_amount):
     count = 0
 
     chunks = cut_audio(audio_path, audio_length)
-    for i in range(len(chunks)):
-        chunk = chunks[i]
-        
-        while True:
-            
-            player = AsyncAudioPlayer()
-            player.play(chunk, out_samplerate)
-            
-            res = input(f"Analising CHUNK = {i}. Proceed with the audio? y|w|n|r ")
-            
-            player.stop()
-            
-            if res == "y":
-                # CHUNK_{YT_VIDEO_ID}_{VIDEO_ID_FILES_SAVED}_{CHUNK_SAVED}
-                saved_filename = f"CHUNK__{yt_id}__{count}__{i}.wav" 
-            elif res == "w":
-                saved_filename = f"CHUNK__W__{yt_id}__{count}__{i}.wav"
-            elif res == "n" or res == "":
-                print("Playing next CHUNK...")
-                break
-            elif res == "r":
-                print("Repeating CHUNK...")
-                continue
-            else:
-                continue
-            
-            out_path = os.path.join("dataset/healthy_cutted", saved_filename)
-            sf.write(out_path, chunk, out_samplerate)
-            count += 1
-            
-            print(f"CHUNK saved as: {saved_filename}")
-            break
+    
+    process_chunks(chunks, out_samplerate, yt_id, 'dataset/healthy_cutted')
 

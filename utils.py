@@ -12,10 +12,42 @@ import yt_dlp
 import librosa
 import soundfile as sf
 import sounddevice as sd
-import threading
 
-def play_audio(chunk, samplerate):
-    sd.play(chunk, samplerate)
+
+def process_chunks(chunks, out_samplerate, yt_id, out_folder):
+    count = 0
+    for i in range(len(chunks)):
+        chunk = chunks[i]
+        
+        while True:
+            
+            player = AsyncAudioPlayer()
+            player.play(chunk, out_samplerate)
+            
+            res = input(f"Analising CHUNK = {i}. Proceed with the audio? y|w|n|r ")
+            
+            player.stop()
+            
+            if res == "y":
+                # CHUNK_{YT_VIDEO_ID}_{VIDEO_ID_FILES_SAVED}_{CHUNK_SAVED}
+                saved_filename = f"CHUNK__{yt_id}__{count}__{i}.wav" 
+            elif res == "w":
+                saved_filename = f"CHUNK__W__{yt_id}__{count}__{i}.wav"
+            elif res == "n" or res == "":
+                print("Playing next CHUNK...")
+                break
+            elif res == "r":
+                print("Repeating CHUNK...")
+                continue
+            else:
+                continue
+            
+            out_path = os.path.join("dataset/noise_cutted", saved_filename)
+            sf.write(out_path, chunk, out_samplerate)
+            count += 1
+            
+            print(f"CHUNK saved as: {saved_filename}")
+            break
 
 def cut_audio(audio_path, seconds):
     y, sr = librosa.load(audio_path, sr=None)
@@ -127,12 +159,3 @@ class AsyncAudioPlayer:
             sd.stop()
             self._thread.join()
             
-            
-            
-        
-        
-        
-        
-        
-        
-        
