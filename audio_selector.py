@@ -10,9 +10,19 @@ import os
 from utils import cut_audio, process_chunks
 import pandas as pd
 
+
+#################
+# Configuration #
+#################
+
 audio_length = 5 # seconds
 out_samplerate = 16000
 start_index = 0
+
+
+#########################
+# Selecting noise files #
+#########################
 
 noise_path = 'dataset/noise_files'
 noise_data = pd.read_csv('dataset/noise_sounds_ids.csv')
@@ -41,7 +51,11 @@ for i in range(start_index, noise_files_amount):
     
     process_chunks(chunks, out_samplerate, yt_id, 'dataset/noise_cutted')
             
-            
+
+###########################
+# Selecting healthy files #
+###########################
+
 healthy_path = 'dataset/healthy_files'
 healthy_data = pd.read_csv('dataset/healthy_sounds_ids.csv')
 

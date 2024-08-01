@@ -34,8 +34,9 @@ healthy_queries = [
   'truck engine sound'
 ]
 
+
 #############################
-# Fetch Noise Engine Sounds #
+# Fetch noise engine sounds #
 #############################
 
 ids, titles, durations = fetch_youtube_ids(queries = noise_queries, max_results = 10, yt_service = youtube)
@@ -44,8 +45,9 @@ noise_sounds = pd.DataFrame({'youtube_id': ids, 'title': titles, 'duration': dur
 
 noise_sounds.to_csv('dataset/noise_sounds_ids.csv', index = False)
 
+
 ###############################
-# Fetch Healthy Engine Sounds #
+# Fetch healthy engine sounds #
 ###############################
 
 ids, titles, durations = fetch_youtube_ids(queries = healthy_queries, max_results = 10, yt_service = youtube)
@@ -53,10 +55,4 @@ ids, titles, durations = fetch_youtube_ids(queries = healthy_queries, max_result
 healthy_sounds = pd.DataFrame({'youtube_id': ids, 'title': titles, 'duration': durations})
 
 healthy_sounds.to_csv('dataset/healthy_sounds_ids.csv', index = False)
-
-
-
-
-
-
 

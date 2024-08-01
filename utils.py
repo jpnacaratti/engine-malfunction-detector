@@ -6,13 +6,57 @@ Created on Sat Jul 20 17:30:17 2024
 @author: j.nacaratti
 """
 
-import isodate
+import sys
 import os
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), 'vggish')))
+
+import isodate
 import yt_dlp
 import librosa
 import soundfile as sf
 import sounddevice as sd
+import threading
+from tqdm import tqdm
+import tensorflow as tf
+from vggish import vggish_input
+from vggish import vggish_slim
+from vggish import vggish_params
 
+def extract_all_features_from_folder(folder_path, has_noise, hop_size):
+    rows = []
+
+    for element in tqdm(os.listdir(folder_path)):
+        
+        audio_path = os.path.join(folder_path, element)
+        
+        embeddings = extract_embeddings(audio_path, hop_size)
+        
+        for features in embeddings:
+            rows.append([audio_path, int(has_noise)] + features.tolist())
+    
+    return rows
+
+def extract_embeddings(audio_path, hop_size=0.96):
+
+    tf.compat.v1.disable_eager_execution()
+    tf.compat.v1.reset_default_graph()
+    sess = tf.compat.v1.Session()
+    
+    checkpoint_path = 'vggish/models/vggish_model.ckpt'
+    
+    vggish_slim.define_vggish_slim()
+    vggish_params.EXAMPLE_HOP_SECONDS = hop_size
+    vggish_slim.load_vggish_slim_checkpoint(sess, checkpoint_path)
+    
+    features_tensor = sess.graph.get_tensor_by_name(vggish_params.INPUT_TENSOR_NAME)
+    embedding_tensor = sess.graph.get_tensor_by_name(vggish_params.OUTPUT_TENSOR_NAME)
+
+    input_batch = vggish_input.wavfile_to_examples(audio_path)
+    
+    print(input_batch.shape)
+
+    return sess.run(embedding_tensor, feed_dict={features_tensor: input_batch})
 
 def process_chunks(chunks, out_samplerate, yt_id, out_folder):
     count = 0

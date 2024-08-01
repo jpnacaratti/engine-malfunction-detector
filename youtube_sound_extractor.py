@@ -10,6 +10,11 @@ import pandas as pd
 import os
 from utils import download_youtube_audio, resample_audio
 
+
+############################
+# Downloading noise audios #
+############################
+
 noise_sounds = pd.read_csv('dataset/noise_sounds_ids.csv')
 
 noise_dest_folder = 'dataset/noise_files'
@@ -22,6 +27,11 @@ for element in noise_sounds['youtube_id']:
     resample_audio(file_path, file_path, 16000)
 
     print(f'Saved audio to: {file_path}')
+
+
+##############################
+# Downloading healthy audios #
+##############################
 
 healthy_sounds = pd.read_csv('dataset/healthy_sounds_ids.csv')
 
@@ -37,13 +47,3 @@ for element in healthy_sounds['youtube_id']:
     print(f'Saved audio to: {file_path}')
     
 print(f'Finished downloading audios: {len(os.listdir(noise_dest_folder))} | {len(os.listdir(healthy_dest_folder))}')
-
-
-
-
-
-
-
-
-
-
