@@ -44,8 +44,6 @@ for i in range(start_index, noise_files_amount):
     print(f"Video title: {title}")
     
     audio_path = os.path.join(noise_path, element)
-    
-    count = 0
 
     chunks = cut_audio(audio_path, audio_length)
     
@@ -78,8 +76,6 @@ for i in range(start_index, healthy_files_amount):
     print(f"Duration: {duration_s}")
     
     audio_path = os.path.join(healthy_path, element)
-    
-    count = 0
 
     chunks = cut_audio(audio_path, audio_length)
     

@@ -17,13 +17,36 @@ import librosa
 import soundfile as sf
 import sounddevice as sd
 import threading
+import numpy as np
+import matplotlib.pyplot as plt
 from tqdm import tqdm
 import tensorflow as tf
 from vggish import vggish_input
 from vggish import vggish_slim
 from vggish import vggish_params
 
-def extract_all_features_from_folder(folder_path, has_noise, hop_size):
+def plot_training_history(history):
+    plt.figure(figsize = (12, 4))
+
+    plt.subplot(1, 2, 1)
+    plt.plot(history.history['loss'], label = 'Training loss')
+    plt.plot(history.history['val_loss'], label = 'Validation loss')
+    plt.xlabel('Epochs')
+    plt.ylabel('Loss')
+    plt.legend()
+    plt.title('Loss during training')
+
+    plt.subplot(1, 2, 2)
+    plt.plot(history.history['binary_accuracy'], label = 'Training accuracy')
+    plt.plot(history.history['val_binary_accuracy'], label = 'Validation accuracy')
+    plt.xlabel('Epochs')
+    plt.ylabel('Accuracy')
+    plt.legend()
+    plt.title('Accuracy during training')
+
+    plt.show()
+
+def extract_all_features_from_folder(folder_path, has_noise, hop_size, embeddings_type = 'all'):
     rows = []
 
     for element in tqdm(os.listdir(folder_path)):
@@ -32,8 +55,13 @@ def extract_all_features_from_folder(folder_path, has_noise, hop_size):
         
         embeddings = extract_embeddings(audio_path, hop_size)
         
-        for features in embeddings:
-            rows.append([audio_path, int(has_noise)] + features.tolist())
+        if embeddings_type == 'mean':
+            rows.append([audio_path, int(has_noise)] + np.mean(embeddings, axis = 0).tolist())
+        elif embeddings_type == 'first':
+            rows.append([audio_path, int(has_noise)] + embeddings[0].tolist())
+        elif embeddings_type == 'all':
+            for features in embeddings:
+                rows.append([audio_path, int(has_noise)] + features.tolist())
     
     return rows
 
@@ -53,12 +81,10 @@ def extract_embeddings(audio_path, hop_size=0.96):
     embedding_tensor = sess.graph.get_tensor_by_name(vggish_params.OUTPUT_TENSOR_NAME)
 
     input_batch = vggish_input.wavfile_to_examples(audio_path)
-    
-    print(input_batch.shape)
 
     return sess.run(embedding_tensor, feed_dict={features_tensor: input_batch})
 
-def process_chunks(chunks, out_samplerate, yt_id, out_folder):
+def process_chunks(chunks, out_samplerate, yt_id, out_folder, prefix = 'CHUNK__'):
     count = 0
     for i in range(len(chunks)):
         chunk = chunks[i]
@@ -74,9 +100,9 @@ def process_chunks(chunks, out_samplerate, yt_id, out_folder):
             
             if res == "y":
                 # CHUNK_{YT_VIDEO_ID}_{VIDEO_ID_FILES_SAVED}_{CHUNK_SAVED}
-                saved_filename = f"CHUNK__{yt_id}__{count}__{i}.wav" 
+                saved_filename = f"{prefix}{yt_id}__{count}__{i}.wav" 
             elif res == "w":
-                saved_filename = f"CHUNK__W__{yt_id}__{count}__{i}.wav"
+                saved_filename = f"{prefix}W__{yt_id}__{count}__{i}.wav"
             elif res == "n" or res == "":
                 print("Playing next CHUNK...")
                 break
@@ -86,7 +112,7 @@ def process_chunks(chunks, out_samplerate, yt_id, out_folder):
             else:
                 continue
             
-            out_path = os.path.join("dataset/noise_cutted", saved_filename)
+            out_path = os.path.join(out_folder, saved_filename)
             sf.write(out_path, chunk, out_samplerate)
             count += 1
             

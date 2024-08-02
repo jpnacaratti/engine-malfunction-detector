@@ -19,6 +19,12 @@ hop_size = 0.96 # seconds
 cutted_noises_path = 'dataset/noise_cutted'
 cutted_healthy_path = 'dataset/healthy_cutted'
 
+# By default, vggish extract 5 embeddings from each audio.
+# all = In 'all' mode, each embedding will be added to csv file
+# mean = In 'mean' mode, will be added the mean of all embeddings extracted from audio
+# first = In 'first' mode, only the first embedding will be added (index = 0)
+extracted_embeddings_type = 'all'
+
 df_columns = ['audio_path', 'has_noise'] + [f'feature_{i}' for i in range(embedding_size)]
 
 
@@ -27,10 +33,10 @@ df_columns = ['audio_path', 'has_noise'] + [f'feature_{i}' for i in range(embedd
 ##############
 
 print("Extracting for NOISE CUTTED FILES...")
-noise_features = extract_all_features_from_folder(cutted_noises_path, True, hop_size)
+noise_features = extract_all_features_from_folder(cutted_noises_path, True, hop_size, extracted_embeddings_type)
 
 print("Extracting for HEALTHY CUTTED FILES...")
-healthy_features = extract_all_features_from_folder(cutted_healthy_path, False, hop_size)
+healthy_features = extract_all_features_from_folder(cutted_healthy_path, False, hop_size, extracted_embeddings_type)
 
 df_rows = []
 
