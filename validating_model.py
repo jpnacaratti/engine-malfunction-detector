@@ -17,7 +17,8 @@ from utils import download_youtube_audio, resample_audio, cut_audio, process_chu
 # Configuration #
 #################
 
-model_path = 'models/classifier__bs_16__epoch_100__val_0.9085.h5'
+model_path = 'models/classifier__bs_80__epoch_115__val_0.8783'
+vggish_model_path = 'vggish/models/vggish_model.ckpt'
 validation_dir = 'dataset/validation_audios'
 threshold = 0.5
 out_samplerate = 16000
@@ -47,6 +48,7 @@ process_chunks(chunks, out_samplerate, video_id, validation_dir, prefix = f'{int
 if delete_original:
     os.remove(f'{video_id}.wav')
 
+
 ###############
 # Classifying #
 ###############
@@ -56,7 +58,7 @@ expected = []
 for element in os.listdir(validation_dir):
     audio_path = os.path.join(validation_dir, element)
     
-    for embd in extract_embeddings(audio_path):
+    for embd in extract_embeddings(audio_path, 0.96, vggish_model_path):
         embeddings.append(embd.tolist())
         expected.append(int(element.startswith('1')))
     
@@ -70,4 +72,4 @@ binary_results = (results > threshold).astype(int)
 
 val_accuracy = accuracy_score(expected, binary_results) * 100
 
-print(f"Validation accuracy: {round(val_accuracy, 2)}")
+print(f"Validation accuracy: {val_accuracy:.2f}")

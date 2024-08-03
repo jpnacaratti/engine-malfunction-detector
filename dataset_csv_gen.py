@@ -18,6 +18,7 @@ embedding_size = 128
 hop_size = 0.96 # seconds
 cutted_noises_path = 'dataset/noise_cutted'
 cutted_healthy_path = 'dataset/healthy_cutted'
+vggish_model_path = 'vggish/models/vggish_model.ckpt'
 
 # By default, vggish extract 5 embeddings from each audio.
 # all = In 'all' mode, each embedding will be added to csv file
@@ -33,10 +34,10 @@ df_columns = ['audio_path', 'has_noise'] + [f'feature_{i}' for i in range(embedd
 ##############
 
 print("Extracting for NOISE CUTTED FILES...")
-noise_features = extract_all_features_from_folder(cutted_noises_path, True, hop_size, extracted_embeddings_type)
+noise_features = extract_all_features_from_folder(cutted_noises_path, True, hop_size, vggish_model_path, extracted_embeddings_type)
 
 print("Extracting for HEALTHY CUTTED FILES...")
-healthy_features = extract_all_features_from_folder(cutted_healthy_path, False, hop_size, extracted_embeddings_type)
+healthy_features = extract_all_features_from_folder(cutted_healthy_path, False, hop_size, vggish_model_path, extracted_embeddings_type)
 
 df_rows = []
 
