@@ -99,7 +99,7 @@ def define_vggish_slim(features_tensor=None, training=False):
 
     # Flatten before entering fully-connected layers
     net = slim.flatten(net)
-    net = slim.repeat(net, 2, slim.fully_connected, 4096, scope='fc1')
+    net = slim.repeat(net, 2, slim.fully_connected, 256, scope='fc1')
     # The embedding layer.
     net = slim.fully_connected(net, params.EMBEDDING_SIZE, scope='fc2',
                                activation_fn=None)
