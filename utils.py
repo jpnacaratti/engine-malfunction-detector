@@ -25,6 +25,40 @@ from vggish import vggish_input
 from vggish import vggish_slim
 from vggish import vggish_params
 
+def classify_tflite(interpreter, input_details, output_details, embeddings):
+    interpreter.set_tensor(input_details[0]['index'], embeddings)
+    
+    interpreter.invoke()
+    
+    return interpreter.get_tensor(output_details[0]['index'])
+
+def extract_embeddings_tflite(interpreter, input_details, output_details, audio_path):
+    input_batch = vggish_input.wavfile_to_examples(audio_path)
+    
+    input_batch = input_batch.astype(np.float32)
+    
+    embeddings = []
+    for spectogram in input_batch:
+        spectogram = np.expand_dims(spectogram, axis = 0)
+    
+        interpreter.set_tensor(input_details[0]['index'], spectogram)
+    
+        interpreter.invoke()
+        
+        embedding = interpreter.get_tensor(output_details[0]['index'])
+        embeddings.append(embedding)
+    
+    return np.vstack(embeddings)
+
+def load_tflite_model(model_path):
+    interpreter = tf.lite.Interpreter(model_path=model_path)
+    interpreter.allocate_tensors()
+    
+    input_details = interpreter.get_input_details()
+    output_details = interpreter.get_output_details()
+    
+    return interpreter, input_details, output_details
+
 def plot_training_history(history):
     plt.figure(figsize = (12, 4))
 
@@ -46,14 +80,14 @@ def plot_training_history(history):
 
     plt.show()
 
-def extract_all_features_from_folder(folder_path, has_noise, hop_size, embeddings_type = 'all'):
+def extract_all_features_from_folder(folder_path, has_noise, hop_size, checkpoint_path, embeddings_type = 'all'):
     rows = []
 
     for element in tqdm(os.listdir(folder_path)):
         
         audio_path = os.path.join(folder_path, element)
         
-        embeddings = extract_embeddings(audio_path, hop_size)
+        embeddings = extract_embeddings(audio_path, hop_size, checkpoint_path)
         
         if embeddings_type == 'mean':
             rows.append([audio_path, int(has_noise)] + np.mean(embeddings, axis = 0).tolist())
@@ -65,13 +99,11 @@ def extract_all_features_from_folder(folder_path, has_noise, hop_size, embedding
     
     return rows
 
-def extract_embeddings(audio_path, hop_size=0.96):
-
+def load_vggish_model(hop_size, checkpoint_path):
+    
     tf.compat.v1.disable_eager_execution()
     tf.compat.v1.reset_default_graph()
     sess = tf.compat.v1.Session()
-    
-    checkpoint_path = 'vggish/models/vggish_model.ckpt'
     
     vggish_slim.define_vggish_slim()
     vggish_params.EXAMPLE_HOP_SECONDS = hop_size
@@ -79,6 +111,12 @@ def extract_embeddings(audio_path, hop_size=0.96):
     
     features_tensor = sess.graph.get_tensor_by_name(vggish_params.INPUT_TENSOR_NAME)
     embedding_tensor = sess.graph.get_tensor_by_name(vggish_params.OUTPUT_TENSOR_NAME)
+    
+    return sess, features_tensor, embedding_tensor
+
+def extract_embeddings(audio_path, hop_size, checkpoint_path):
+    
+    sess, features_tensor, embedding_tensor = load_vggish_model(hop_size, checkpoint_path)
 
     input_batch = vggish_input.wavfile_to_examples(audio_path)
 
