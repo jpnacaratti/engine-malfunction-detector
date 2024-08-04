@@ -17,7 +17,7 @@ from utils import download_youtube_audio, resample_audio, cut_audio, process_chu
 # Configuration #
 #################
 
-model_path = 'models/classifier__bs_80__epoch_115__val_0.8783'
+model_path = 'models/classifier__val_89.7321__loss_0.2711'
 vggish_model_path = 'vggish/models/vggish_model.ckpt'
 validation_dir = 'dataset/validation_audios'
 threshold = 0.5

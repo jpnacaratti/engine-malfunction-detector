@@ -14,7 +14,7 @@ from utils import load_vggish_model
 # Converting classifier to tflite #
 ###################################
 
-savedmodel_path = 'models/classifier__bs_80__epoch_115__val_0.8783'
+savedmodel_path = 'models/classifier__val_89.7321__loss_0.2711'
 classifier_tflite_save_path = 'models/fault_classifier.tflite'
 
 classifier_converter = tf.lite.TFLiteConverter.from_saved_model(savedmodel_path)

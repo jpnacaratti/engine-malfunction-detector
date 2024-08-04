@@ -16,7 +16,7 @@ from utils import download_youtube_audio, resample_audio, cut_audio, process_chu
 # Configuration #
 #################
 
-classifier_path = 'models/fault_classifier_87.tflite'
+classifier_path = 'models/fault_classifier_89.tflite'
 vggish_path = 'vggish/models/vggish.tflite'
 validation_dir = 'dataset/validation_audios'
 threshold = 0.5
