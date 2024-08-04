@@ -1,0 +1,16 @@
+{
+    "accuracy": 97.76785969734192,
+    "val_accuracy": 89.73214030265808,
+    "val_loss": 0.27113816142082214,
+    "model_path": "grid_search/val_89.7321__loss_0.2711__index_377",
+    "combo": {
+        "neurons": 64,
+        "kernel_init": "glorot_uniform",
+        "kernel_reg": null,
+        "dropout": 0.2,
+        "third_block": true,
+        "fourth": true,
+        "epochs": 100,
+        "batch_size": 64
+    }
+}
