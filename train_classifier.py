@@ -7,18 +7,31 @@ Created on Tue Jul 30 21:36:58 2024
 """
 
 import pandas as pd
-from sklearn.model_selection import train_test_split
-from keras.models import Sequential
-from keras.layers import Dense, Dropout
 from keras.callbacks import EarlyStopping
-import tensorflow as tf
+from sklearn.model_selection import train_test_split
 from utils import plot_training_history
+from models import get_baseline_dense_encoder, build_classifier_net
 
 
-batch_size = 80
-epochs = 115
+##############
+# Parameters #
+##############
+
+neurons = 64
+kernel_initializer = 'glorot_uniform'
+kernel_regularizer = None
+dropout = 0.2
+batch_size = 64
+epochs = 100
 validation_size = 0.2
+loss = 'binary_crossentropy'
+optimizer = 'adam'
+metrics = ['binary_accuracy']
 
+
+#####################
+# Creating datasets #
+#####################
 
 data = pd.read_csv('dataset/audio_features.csv')
 
@@ -27,27 +40,29 @@ y = data.iloc[:, 1]
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, train_size=validation_size, stratify=y)
 
-model = Sequential([
-    Dense(units=64, activation='relu', input_dim=128, kernel_regularizer='l2'),
-    Dropout(0.3),
-    Dense(units=32, activation='relu', kernel_regularizer='l2'),
-    Dropout(0.3),
-    Dense(units=16, activation='relu', kernel_regularizer='l2'),
-    Dropout(0.3),
-    Dense(units=8, activation='relu', kernel_regularizer='l2'),
-    Dropout(0.3),
-    Dense(units=1, activation='sigmoid')
-])
 
-model.compile(optimizer = 'adam', loss = 'binary_crossentropy', metrics = ['binary_accuracy'])
+#################
+# Training loop #
+#################
 
-early_stopping = EarlyStopping(monitor='val_loss', patience=10, restore_best_weights=True)
+encoder = get_baseline_dense_encoder(neurons, kernel_initializer, kernel_regularizer, dropout)
+model = build_classifier_net(encoder, loss, optimizer, metrics)
 
-history = model.fit(X_train, y_train, 
-                    batch_size = batch_size, 
-                    epochs = epochs,
-                    validation_data = (X_test, y_test),
-                    callbacks = [early_stopping])
+history = model.fit(
+    x = X_train, 
+    y = y_train, 
+    batch_size = batch_size, 
+    epochs = epochs,
+    validation_data = (X_test, y_test),
+    callbacks = [
+        EarlyStopping(
+            monitor='val_loss', 
+            patience=10,
+            min_delta = 0.001,
+            restore_best_weights=True
+        )
+    ]
+)
 
 bias, accuracy = model.evaluate(X_test, y_test)
 
@@ -55,4 +70,4 @@ plot_training_history(history)
 
 print(f"Accuracy: {round(accuracy * 100, 2)}")
 
-tf.saved_model.save(model, f'models/classifier__bs_{batch_size}__epoch_{epochs}__val_{accuracy:.4f}')
+model.save(f'models/classifier__bs_{batch_size}__epoch_{epochs}__val_{accuracy:.4f}', save_format = 'tf')

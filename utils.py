@@ -14,16 +14,46 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), 'vggish'
 import isodate
 import yt_dlp
 import librosa
+import threading
+import json
 import soundfile as sf
 import sounddevice as sd
-import threading
 import numpy as np
+import tensorflow as tf
 import matplotlib.pyplot as plt
 from tqdm import tqdm
-import tensorflow as tf
 from vggish import vggish_input
 from vggish import vggish_slim
 from vggish import vggish_params
+
+def convert_training_info_to_dict(accuracy, val_accuracy, val_loss, model_path, combo):
+    neurons, kernel_init, kernel_reg, dropout, third_block, fourth_block, epochs, batch_size = combo
+    
+    result = {
+        'accuracy': accuracy,
+        'val_accuracy': val_accuracy,
+        'val_loss': val_loss,
+        'model_path': model_path,
+        'combo': {
+            'neurons': neurons,
+            'kernel_init': kernel_init,
+            'kernel_reg': kernel_reg,
+            'dropout': dropout,
+            'third_block': third_block,
+            'fourth': fourth_block,
+            'epochs': epochs,
+            'batch_size': batch_size
+        }
+    }
+    
+    return result
+
+def dict_to_json_file(to_save, save_path):
+    try:
+        with open(save_path, 'w') as json_file:
+            json.dump(to_save, json_file, indent=4)
+    except Exception as e:
+        print(f"Error saving the dict in {save_path}: {e}")
 
 def classify_tflite(interpreter, input_details, output_details, embeddings):
     interpreter.set_tensor(input_details[0]['index'], embeddings)
@@ -59,7 +89,7 @@ def load_tflite_model(model_path):
     
     return interpreter, input_details, output_details
 
-def plot_training_history(history):
+def plot_training_history(history, save_path = None):
     plt.figure(figsize = (12, 4))
 
     plt.subplot(1, 2, 1)
@@ -78,7 +108,10 @@ def plot_training_history(history):
     plt.legend()
     plt.title('Accuracy during training')
 
-    plt.show()
+    if save_path:
+        plt.savefig(save_path)
+    else:
+        plt.show()
 
 def extract_all_features_from_folder(folder_path, has_noise, hop_size, checkpoint_path, embeddings_type = 'all'):
     rows = []

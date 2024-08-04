@@ -11,3 +11,6 @@ dataset/audio_features.csv
 
 # VGGish
 vggish/models/
+
+# Grid Search
+grid_search/
