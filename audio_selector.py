@@ -7,8 +7,8 @@ Created on Sun Jul 21 18:06:41 2024
 """
 
 import os
-from utils import cut_audio, process_chunks
 import pandas as pd
+from utils import cut_audio, process_chunks
 
 
 #################

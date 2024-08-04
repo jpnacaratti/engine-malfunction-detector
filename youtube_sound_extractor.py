@@ -6,8 +6,8 @@ Created on Sat Jul 20 18:10:40 2024
 @author: j.nacaratti
 """
 
-import pandas as pd
 import os
+import pandas as pd
 from utils import download_youtube_audio, resample_audio
 
 
